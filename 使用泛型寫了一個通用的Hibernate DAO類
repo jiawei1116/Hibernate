@@ -1,0 +1,119 @@
+http://www.cnblogs.com/HD/p/3975250.html
+
+package com.my.dao.impl;
+
+import java.io.Serializable;
+import java.lang.reflect.ParameterizedType;
+import java.lang.reflect.Type;
+import java.util.List;
+
+import org.hibernate.criterion.Projections;
+
+import com.my.dao.GenericDao;
+import com.my.dao.GenericDaoSupport;
+
+/**
+ * Generic DAO class
+ * @author Robin
+ *
+ * @param <T>
+ * @param <PK>
+ */
+@SuppressWarnings("all")
+public class GenericDaoImpl<T extends Serializable, PK extends Serializable>
+        extends GenericDaoSupport implements GenericDao<T, PK> {
+    // Entity class
+    private Class<T> entityClass;
+
+    /**
+     * Constructor
+     */
+    public GenericDaoImpl() {
+        // 通過反射獲取T的類型信息實例
+        this.entityClass = (Class<T>) ((ParameterizedType) this.getClass()
+                .getGenericSuperclass()).getActualTypeArguments()[0];
+    }
+    
+    /**
+     * Create entity
+     * @param entity
+     */
+    @Override
+    public void create(T entity) {
+        getSession().save(entity);
+    }
+
+    /**
+     * Update entity
+     * @param entity
+     */
+    @Override
+    public void update(T entity) {
+        getSession().update(entity);
+    }
+
+    /**
+     * Create or Update entity
+     * @param entity
+     */
+    @Override
+    public void saveOrUpdate(T entity) {
+        getSession().saveOrUpdate(entity);
+    }
+    
+    /**
+     * Delete entity
+     * @param entity
+     */
+    public void delete(T entity){
+        getSession().delete(entity);
+    }
+
+    /**
+     * Find entity by id
+     * @param id
+     * @return Entity
+     */
+    @Override
+    public T find(PK id) {
+        return (T) getSession().get(entityClass, id);
+    }
+
+    /**
+     * Find all entities
+     * @return
+     */
+    @Override
+    public List<T> findAll() {
+        return getSession().createCriteria(entityClass).list();
+    }
+    
+    /**
+     * Find all entities by paging
+     * @param pageNumber
+     * @param pageSize
+     * @return
+     */
+    public List<T> findList(int pageNumber, int pageSize) {
+        return getSession().createCriteria(entityClass)
+                .setFirstResult((pageNumber - 1) * pageSize)
+                .setMaxResults(pageSize)
+                .list();
+    }
+    
+    /**
+     * All row count
+     * @return
+     */
+    public Long count() {
+        Long count = (Long)getSession().createCriteria(entityClass)
+                .setProjection(Projections.rowCount())
+                .uniqueResult();
+        if(count == null) {
+            return (long)0;
+        }
+        else {
+            return count;
+        }
+    }
+}
