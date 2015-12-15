@@ -1,3 +1,0 @@
-這個要涉及Hibernate的更新做法。
-Hibernate update做法一般是先獲取物件再set一個變化的值。然後更新。
-不能直接update，不然就會出現其他欄位為null
